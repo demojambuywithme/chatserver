@@ -18,6 +18,7 @@
   "homepage": "https://github.com/demojambuywithme/chatserver",
   "dependencies": {
     "express": "^4.12.4",
+    "mongoose": "^4.0.6",
     "socket.io": "^1.3.5"
   }
 }

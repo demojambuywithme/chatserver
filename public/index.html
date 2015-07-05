@@ -65,8 +65,14 @@
 </head>
 
 <body>
-    <div id='chats' class='container'>
+    <label for="usrid">user id</label>
+    <input type="text" id="usrid" value="junshen" />
+    <br />
+    <label for="conversationId">conversation</label>
+    <input type="text" id="conversationId" value="1001" />
+    <button type="button" id="chat">chat</button>
 
+    <div id='chats' class='container' style="overflow:scroll">
     </div>
     <!-- <ul id="messages"></ul> -->
     <form action="">
@@ -75,41 +81,56 @@
     </form>
 
     <script type="text/javascript" charset="utf-8">
+        var socket = io(window.location.href + 'chat'),
+            usrid,
+            conversationId;
 
+        $('#chat').on('click', function() {
+            usrid = $('#usrid').val();
+            conversationId = $('#conversationId').val();
 
-        var socket = io('http://localhost:8080/chat');
-
-        socket.emit('join', {
-            conversationId: '100',
-        });
-
-        socket.on('chatHistory', function(chats) {
-            chats.forEach(function(chat) {
-                var $chat = $('<div>').addClass('bubble').text(chat.msg);
-
-                if (chat.user === 'junshen') {
-                    $chat.addClass('bubble--alt');
-                }
-
-                $chat.appendTo('#chats');
+            socket.emit('join', {
+                conversationId: conversationId,
             });
         });
 
-        socket.on('newMessage', function(msg) {
-            console.log(msg)
-        });
-
         $('form').submit(function() {
-
             socket.emit('chat', {
-                conversationId: '100',
-                usrid: 'junshen',
-                usrname: 'junshen',
+                conversationId: conversationId,
+                usrid: usrid,
                 msg: $('#m').val()
             });
 
             $('#m').val('');
             return false;
+        });
+
+        socket.on('chatHistory', function(chats) {
+            $('#chats').empty();
+
+            chats.forEach(function(chat) {
+                var $chat = $('<div>').addClass('bubble').text(chat.msg);
+
+                if (chat.usrid === usrid) {
+                    $chat.addClass('bubble--alt');
+                }
+
+                $chat.appendTo('#chats');
+
+                $("#chats").scrollTop($("#chats")[0].scrollHeight);
+            });
+        });
+
+        socket.on('newMessage', function(chat) {
+            var $chat = $('<div>').addClass('bubble').text(chat.msg);
+
+            if (chat.usrid === usrid) {
+                $chat.addClass('bubble--alt');
+            }
+
+            $chat.appendTo('#chats');
+
+            $("#chats").scrollTop($("#chats")[0].scrollHeight);
         });
     </script>
 

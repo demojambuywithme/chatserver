@@ -1,12 +1,11 @@
 var mongoose = require('mongoose');
-var Scheme = mongoose.Scheme;
+var Schema = mongoose.Schema;
 
 
-var conversationScheme = new Scheme({
+var conversationSchema = new Schema({
     id: String,
     messages: [{
         usrid: String,
-        usrname: String,
         msg: String,
         when: {
             type: Date,
@@ -16,7 +15,7 @@ var conversationScheme = new Scheme({
 });
 
 
-var conversationModel = mongoose.model('Conversation', conversationScheme);
+var conversationModel = mongoose.model('Conversation', conversationSchema);
 
 
 module.exports = conversationModel;
