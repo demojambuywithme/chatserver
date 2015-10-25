@@ -10,50 +10,56 @@ mongoose.connect('mongodb://localhost/chat');
 
 app.use(express.static('public'));
 
-chat.on('connection', function(socket) {
-    // user join in a conversation
-    socket.on('join', function(obj) {
-        // join the conversation room
-        socket.join(obj.conversationId);
+chat.on('connection', function (socket) {
+	// user join in a conversation
+	socket.on('join', function (obj) {
+		// join the conversation room
+		socket.join(obj.conversationId);
 
-        // query chat history for this conversation
-        conversationModel.findOne({
-            id: obj.conversationId
-        }, function(err, conversation) {
-            if(conversation){
-                socket.emit('chatHistory', conversation.messages);
-            }
-        });
-    });
+		// query chat history for this conversation
+		conversationModel.findOne({
+			id: obj.conversationId
+		}, function (err, conversation) {
+			if (conversation) {
+				socket.emit('chatHistory', conversation.messages);
+			}
+		});
+	});
 
-    // user send a chat message
-    socket.on('chat', function(obj) {
-        chat.to(obj.conversationId).emit('newMessage', obj);
-        // socket.to(obj.conversationId).emit('newMessage', obj);
-        // socket.emit('newMessage', obj);
+	// user leave  a conversation
+	socket.on('leave', function (obj) {
+		// join the conversation room
+		socket.leave(socket.rooms);
+	});
 
-        // persist the new message 
-        conversationModel.findOne({
-            id: obj.conversationId
-        }, function(err, conversation) {
-            if(!conversation){
-                conversation = new conversationModel({
-                    id: obj.conversationId,
-                    messages: []
-                });
-            }
+	// user send a chat message
+	socket.on('chat', function (obj) {
+		chat.to(obj.conversationId).emit('newMessage', obj);
+		// socket.to(obj.conversationId).emit('newMessage', obj);
+		// socket.emit('newMessage', obj);
 
-            conversation.messages.push({
-                usrid: obj.usrid,
-                msg: obj.msg
-            });
+		// persist the new message 
+		conversationModel.findOne({
+			id: obj.conversationId
+		}, function (err, conversation) {
+			if (!conversation) {
+				conversation = new conversationModel({
+					id: obj.conversationId,
+					messages: []
+				});
+			}
 
-            conversation.save();
-        });
-    });
+			conversation.messages.push({
+				usrid: obj.usrid,
+				msg: obj.msg
+			});
+
+			conversation.save();
+		});
+	});
 });
 
 
-server.listen(8090, function() {
-    console.log('listening on *:8090');
+server.listen(8090, function () {
+	console.log('listening on *:8090');
 });
